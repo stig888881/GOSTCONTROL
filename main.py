@@ -1,7 +1,8 @@
-import docx
+from docx import Document
 import re
 class document:
-    def GetParaData(self, output_doc_name, paragraph):
+    @staticmethod
+    def GetParaData(output_doc_name, paragraph):
         output_para = output_doc_name.add_paragraph()
         for run in paragraph.runs:
             output_run = output_para.add_run(run.text)
@@ -14,15 +15,16 @@ class document:
             # Run's color data
             output_run.font.color.rgb = run.font.color.rgb
             # Run's font data
-            output_run.style.name = run.style.name
+            output_run.style = run.style
             # Paragraph's alignment data
             output_para.paragraph_format.alignment = paragraph.paragraph_format.alignment
             output_para.paragraph_format.left_indent = paragraph.paragraph_format.left_indent
             output_para.paragraph_format.right_indent = paragraph.paragraph_format.right_indent
             output_para.paragraph_format.first_line_indent = paragraph.paragraph_format.first_line_indent
+            output_para.content_type = paragraph.part.content_type
     def Serch(self,fileName):
         self.fileName=fileName
-        doc = docx.Document(fileName)
+        doc = Document(fileName)
 
         completedText = []
         BaseGost=[['ГОСТ 8','2000'],['ГОСТ 1','2002'],['ГОСТ 2','2001'],['ГОСТ 9','2003'],['ГОСТ 0','2000']]
@@ -44,10 +46,7 @@ class document:
         for i in range(len(res[0])):
             g = res[0][i].split('-')
             b.append(g)
-        #a = np.array(g)
-        #b = a.reshape(-1, 2)
         print(b)
-        #print(b)
         for i in range(len(b)):
             for j in range(len(BaseGost)):
                 if b[i][0] == BaseGost[j][0]:
@@ -64,19 +63,19 @@ class document:
                          char = completedText[i]
                          char = char.replace(result[j], result[j]+'-ЭТОТ ГОСТ УСТАРЕЛ')
                          completedText[i] = char
+                         doc.paragraphs[i].text=char
                         else:
                          print('Строка ненайдена')
-        return [completedText,lengthparag,doc.paragraphs]
+        return doc.paragraphs
 
-    def Save(self,Paragraph, ct):
+    def Save(self,Paragraph):
         n = len(Paragraph)
-        p = docx.Document()
+        p = Document()
         for i in range(n):
             self.GetParaData(p, Paragraph[i])
-            p.paragraphs[i].text = ct[i]
         p.save('demo2.docx')
 O=document()
 BigO=O.Serch('demo.docx')
 
-O.Save(BigO[2],BigO[0])
+O.Save(BigO)
 
