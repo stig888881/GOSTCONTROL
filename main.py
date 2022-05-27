@@ -1,25 +1,25 @@
 import docx
 import re
-def GetParaData(output_doc_name, paragraph):
-    output_para = output_doc_name.add_paragraph()
-    for run in paragraph.runs:
-        output_run = output_para.add_run(run.text)
-        # Run's bold data
-        output_run.bold = run.bold
-        # Run's italic data
-        output_run.italic = run.italic
-        # Run's underline data
-        output_run.underline = run.underline
-        # Run's color data
-        output_run.font.color.rgb = run.font.color.rgb
-        # Run's font data
-        output_run.style.name = run.style.name
-        # Paragraph's alignment data
-        output_para.paragraph_format.alignment = paragraph.paragraph_format.alignment
-        output_para.paragraph_format.left_indent = paragraph.paragraph_format.left_indent
-        output_para.paragraph_format.right_indent = paragraph.paragraph_format.right_indent
-        output_para.paragraph_format.first_line_indent = paragraph.paragraph_format.first_line_indent
 class document:
+    def GetParaData(self, output_doc_name, paragraph):
+        output_para = output_doc_name.add_paragraph()
+        for run in paragraph.runs:
+            output_run = output_para.add_run(run.text)
+            # Run's bold data
+            output_run.bold = run.bold
+            # Run's italic data
+            output_run.italic = run.italic
+            # Run's underline data
+            output_run.underline = run.underline
+            # Run's color data
+            output_run.font.color.rgb = run.font.color.rgb
+            # Run's font data
+            output_run.style.name = run.style.name
+            # Paragraph's alignment data
+            output_para.paragraph_format.alignment = paragraph.paragraph_format.alignment
+            output_para.paragraph_format.left_indent = paragraph.paragraph_format.left_indent
+            output_para.paragraph_format.right_indent = paragraph.paragraph_format.right_indent
+            output_para.paragraph_format.first_line_indent = paragraph.paragraph_format.first_line_indent
     def Serch(self,fileName):
         self.fileName=fileName
         doc = docx.Document(fileName)
@@ -68,15 +68,15 @@ class document:
                          print('Строка ненайдена')
         return [completedText,lengthparag,doc.paragraphs]
 
-    def Save(Paragraph, ct):
+    def Save(self,Paragraph, ct):
         n = len(Paragraph)
         p = docx.Document()
         for i in range(n):
-            GetParaData(p, Paragraph[i])
+            self.GetParaData(p, Paragraph[i])
             p.paragraphs[i].text = ct[i]
         p.save('demo2.docx')
 O=document()
 BigO=O.Serch('demo.docx')
 
-document.Save(BigO[2],BigO[0])
+O.Save(BigO[2],BigO[0])
 
