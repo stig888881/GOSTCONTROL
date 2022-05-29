@@ -21,7 +21,6 @@ class document:
     def BaseGost():
         import sqlite3
         conn = sqlite3.connect("sqlite.db")
-        gost2 = []
         conn.row_factory = lambda cursor, row: row[0]
         c = conn.cursor()
         gost2 = c.execute('SELECT * FROM tablegost2').fetchall()
