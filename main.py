@@ -1,33 +1,47 @@
 from docx import Document
 import re
+import numpy as np
 class document:
     @staticmethod
     def GetParaData(output_doc_name, paragraph):
         output_para = output_doc_name.add_paragraph()
         for run in paragraph.runs:
             output_run = output_para.add_run(run.text)
-            # Run's bold data
             output_run.bold = run.bold
-            # Run's italic data
             output_run.italic = run.italic
-            # Run's underline data
             output_run.underline = run.underline
-            # Run's color data
             output_run.font.color.rgb = run.font.color.rgb
-            # Run's font data
             output_run.style = run.style
-            # Paragraph's alignment data
             output_para.paragraph_format.alignment = paragraph.paragraph_format.alignment
             output_para.paragraph_format.left_indent = paragraph.paragraph_format.left_indent
             output_para.paragraph_format.right_indent = paragraph.paragraph_format.right_indent
             output_para.paragraph_format.first_line_indent = paragraph.paragraph_format.first_line_indent
             output_para.content_type = paragraph.part.content_type
+    @staticmethod
+    def BaseGost():
+        import sqlite3
+        conn = sqlite3.connect("sqlite.db")
+        gost2 = []
+        conn.row_factory = lambda cursor, row: row[0]
+        c = conn.cursor()
+        gost2 = c.execute('SELECT * FROM tablegost2').fetchall()
+        m = []
+        for i in range(len(gost2)):
+            g = gost2[i].split('-')
+            m.append(g[0])
+            m.append(g[1])
+        a = np.array(m)
+        b = a.reshape(-1, 2)
+        resgost2 = np.array(b).tolist()
+        return resgost2
+
     def Serch(self,fileName):
         self.fileName=fileName
         doc = Document(fileName)
 
         completedText = []
-        BaseGost=[['ГОСТ 8','2000'],['ГОСТ 1','2002'],['ГОСТ 2','2001'],['ГОСТ 9','2003'],['ГОСТ 0','2000']]
+        BaseGost=self.BaseGost()
+        #BaseGost=[['ГОСТ Р 8','2000'],['ГОСТ Р 1','2002'],['ГОСТ Р 2','2001'],['ГОСТ Р 9','2003'],['ГОСТ Р 0','2000']]
         for paragraph in doc.paragraphs:
             completedText.append(paragraph.text)
         hub=[]
@@ -35,7 +49,7 @@ class document:
         result=[]
         lengthparag = len(completedText)
         for i in range(lengthparag):
-                result4= re.findall(r"ГОСТ \d{1}-\d{4}", completedText[i])
+                result4= re.findall(r"ГОСТ Р \d{5}-\d{2}", completedText[i])
                 if result4!=[]:
                     hub.append(result4)
 
@@ -62,7 +76,6 @@ class document:
                         if completedText[i].find(result[j]) != 1:
                          char = completedText[i]
                          char = char.replace(result[j], result[j]+'-ЭТОТ ГОСТ УСТАРЕЛ')
-                         completedText[i] = char
                          doc.paragraphs[i].text=char
                         else:
                          print('Строка ненайдена')
@@ -76,6 +89,5 @@ class document:
         p.save('demo2.docx')
 O=document()
 BigO=O.Serch('demo.docx')
-
 O.Save(BigO)
 
