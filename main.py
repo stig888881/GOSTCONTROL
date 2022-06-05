@@ -34,13 +34,12 @@ class document:
         resgost2 = np.array(b).tolist()
         return resgost2
 
-    def Serch(self,fileName):
+    def SerchGod(self,fileName):
         self.fileName=fileName
         doc = Document(fileName)
 
         completedText = []
         BaseGost=self.BaseGost()
-        #BaseGost=[['ГОСТ Р 8','2000'],['ГОСТ Р 1','2002'],['ГОСТ Р 2','2001'],['ГОСТ Р 9','2003'],['ГОСТ Р 0','2000']]
         for paragraph in doc.paragraphs:
             completedText.append(paragraph.text)
         hub=[]
@@ -75,9 +74,29 @@ class document:
                         if completedText[i].find(result[j]) != 1:
                          char = completedText[i]
                          char = char.replace(result[j], result[j]+'-ЭТОТ ГОСТ УСТАРЕЛ')
+                         completedText[i]=char
                          doc.paragraphs[i].text=char
                         else:
                          print('Строка ненайдена')
+        return doc.paragraphs
+    def SerchChange(self, fileName):
+        self.fileName=fileName
+        doc = Document(fileName)
+        completedText = []
+        BaseOldGost=['ГОСТ Р 50442-92','ГОСТ Р 8.3343.33-98']
+        BaseNewGost=['ГОСТ Р 0008.003-2019','ГОСТ 0008.000-2019']
+        for paragraph in doc.paragraphs:
+            completedText.append(paragraph.text)
+        lengthparag = len(completedText)
+        for i in range(lengthparag):
+            for j in range(len(BaseOldGost)):
+                if completedText[i].find(BaseOldGost[j]) != 1:
+                    char = completedText[i]
+                    char = char.replace(BaseOldGost[j], BaseNewGost[j])
+                    completedText[i] = char
+                    doc.paragraphs[i].text = char
+                else:
+                    print('Строка ненайдена')
         return doc.paragraphs
 
     def Save(self,Paragraph):
@@ -87,6 +106,8 @@ class document:
             self.GetParaData(p, Paragraph[i])
         p.save('demo2.docx')
 O=document()
-BigO=O.Serch('demo.docx')
+# BigO=O.SerchGod('demo.docx')
+# O.Save(BigO)
+BigO=O.SerchChange('demo.docx')
 O.Save(BigO)
 
