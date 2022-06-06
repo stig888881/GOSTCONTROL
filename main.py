@@ -2,6 +2,7 @@ from docx import Document
 import re
 import numpy as np
 class document:
+#КОПИРУЕМ ПАРАМЕТРЫ ИЗ ИСХОДНОГО ДОКУМЕНТА
     @staticmethod
     def GetParaData(output_doc_name, paragraph):
         output_para = output_doc_name.add_paragraph()
@@ -17,6 +18,7 @@ class document:
             output_para.paragraph_format.right_indent = paragraph.paragraph_format.right_indent
             output_para.paragraph_format.first_line_indent = paragraph.paragraph_format.first_line_indent
             output_para.content_type = paragraph.part.content_type
+#ЗАБИРАЕМ ГОСТЫ ИЗ БАЗЫ. ПОДГОТАВЛИВАЕМ ДЛЯ ПОИСКА МАССИВ
     @staticmethod
     def BaseGost():
         import sqlite3
@@ -24,16 +26,16 @@ class document:
         conn.row_factory = lambda cursor, row: row[0]
         c = conn.cursor()
         gost2 = c.execute('SELECT * FROM tablegost2').fetchall()
-        m = []
+        splitgost = []
         for i in range(len(gost2)):
             g = gost2[i].split('-')
-            m.append(g[0])
-            m.append(g[1])
-        a = np.array(m)
-        b = a.reshape(-1, 2)
-        resgost2 = np.array(b).tolist()
+            splitgost.append(g[0])
+            splitgost.append(g[1])
+        buffer = np.array(splitgost)
+        resbuffer = buffer.reshape(-1, 2)
+        resgost2 = np.array(resbuffer).tolist()
         return resgost2
-
+#ПОИСК УСТАРЕВШЕГО ГОДА
     def SerchGod(self,fileName):
         self.fileName=fileName
         doc = Document(fileName)
@@ -43,7 +45,8 @@ class document:
         for paragraph in doc.paragraphs:
             completedText.append(paragraph.text)
         hub=[]
-        res=[]
+        findgost=[]
+        god=[]
         result=[]
         lengthparag = len(completedText)
         for i in range(lengthparag):
@@ -51,34 +54,35 @@ class document:
                 if result4!=[]:
                     hub.append(result4)
 
-        res.append(sum(hub, []))
-        print(res)
-        b=[]
-        print(b)
-        for i in range(len(res[0])):
-            g = res[0][i].split('-')
-            b.append(g)
-        print(b)
-        for i in range(len(b)):
+        findgost.append(sum(hub, []))
+        print(findgost)
+        splitbuffer=[]
+        for i in range(len(findgost[0])):
+            itog = findgost[0][i].split('-')
+            splitbuffer.append(itog)
+        print(splitbuffer)
+        for i in range(len(splitbuffer)):
             for j in range(len(BaseGost)):
-                if b[i][0] == BaseGost[j][0]:
+                if splitbuffer[i][0] == BaseGost[j][0]:
                     print('Same gost')
-                    if b[i][1] == BaseGost[j][1]:
+                    if splitbuffer[i][1] == BaseGost[j][1]:
                         print('Same god')
                     else:
-                        result.append(b[i][0])
+                        result.append(splitbuffer[i][0])
+                        god.append(BaseGost[j][1])
                         print(result)
                         print('Not same god')
         for i in range(lengthparag):
                 for j in range(len(result)):
                         if completedText[i].find(result[j]) != 1:
                          char = completedText[i]
-                         char = char.replace(result[j], result[j]+'-ЭТОТ ГОСТ УСТАРЕЛ')
+                         char = char.replace(result[j], result[j]+'-ЭТОТ ГОСТ УСТАРЕЛ,АКТУАЛЬНЫЙ ГОД:'+god[j])
                          completedText[i]=char
                          doc.paragraphs[i].text=char
                         else:
                          print('Строка ненайдена')
         return doc.paragraphs
+#ПОИСК ЗАМЕНЕННОГО ГОСТА
     def SerchChange(self, fileName):
         self.fileName=fileName
         doc = Document(fileName)
@@ -92,22 +96,27 @@ class document:
             for j in range(len(BaseOldGost)):
                 if completedText[i].find(BaseOldGost[j]) != 1:
                     char = completedText[i]
-                    char = char.replace(BaseOldGost[j], BaseNewGost[j])
+                    char = char.replace(BaseOldGost[j],BaseOldGost[j]+':ЗАМЕНЕН НА-'+BaseNewGost[j])
                     completedText[i] = char
                     doc.paragraphs[i].text = char
                 else:
                     print('Строка ненайдена')
         return doc.paragraphs
-
+#СОХРАНЕНИЕ ДОКУМЕНТА ЗА НОВЫМ ИМЕНЕМ
     def Save(self,Paragraph):
-        n = len(Paragraph)
-        p = Document()
-        for i in range(n):
-            self.GetParaData(p, Paragraph[i])
-        p.save('demo2.docx')
+        length = len(Paragraph)
+        Newdoc = Document()
+        for i in range(length):
+            self.GetParaData(Newdoc, Paragraph[i])
+        for j in range(2,10):
+            j=str(j)
+            try:
+                open('demo'+j+'.docx')
+            except FileNotFoundError:
+                Newdoc.save('demo'+j+'.docx')
+                break
 O=document()
-# BigO=O.SerchGod('demo.docx')
-# O.Save(BigO)
+BigO=O.SerchGod('demo.docx')
+O.Save(BigO)
 BigO=O.SerchChange('demo.docx')
 O.Save(BigO)
-
